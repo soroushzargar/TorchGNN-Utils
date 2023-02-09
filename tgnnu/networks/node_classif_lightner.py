@@ -19,7 +19,7 @@ class NodeLevelGNN(object):
             
         self.optimizer = optimizer_lambda(self.model.parameters())
 
-    def forward(self, X, mask=None):
+    def forward(self, X):
         return self.model(X)
     
     def loss(self, X, y, mask=None):
@@ -74,12 +74,14 @@ class NodeLevelGNN(object):
     def predict(self, X, mask=None):
         self.model.eval()
         with torch.no_grad():
-            y_hat = self.forward(X, mask)
-        return y_hat
+            y_hat = self.forward(X)
+        if mask is None:
+            mask = torch.ones_like(y_hat).bool()
+        return y_hat[mask]
 
     def evaluate(self, X, y, mask=None):
         if mask is None:
             mask = torch.ones_like(y).bool()
-        y_hat = self.predict(X, mask)
+        y_hat = self.predict(X)
         return ((y_hat.argmax(dim=1)[mask] == y[mask]).sum() / mask.sum()).item()
     

@@ -10,7 +10,7 @@ class SplitManager(ABC):
         self.perm_selected = torch.zeros_like(self.perm_idx).bool()
         self.perm_class = self.dataset.y[self.perm_idx]
 
-    def alloc(self, budget, budget_allocated="overall", stratified=False, return_cumulative=True, return_mask=True):
+    def alloc(self, budget, budget_allocated="overall", stratified=False, return_cumulative=False, return_mask=True):
         """ Allocates a set of indices based on the budget and the budget allocation strategy
         """
         if budget_allocated == "overall" and stratified:
