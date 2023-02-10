@@ -46,8 +46,10 @@ class NodeLevelGNN(object):
         X = X.to(self.device)
         if train_mask is None:
             train_mask = X.train_mask
-        if val_mask is None:
+        if val_mask is None and not ignore_validation:
             val_mask = X.val_mask
+        if val_mask is None and ignore_validation:
+            val_mask = torch.zeros_like(X.y).bool()
 
         train_mask = train_mask.to(self.device)
         val_mask = val_mask.to(self.device)
