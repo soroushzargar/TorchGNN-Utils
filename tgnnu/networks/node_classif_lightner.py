@@ -42,7 +42,7 @@ class NodeLevelGNN(object):
         self.optimizer.step()
         return loss.item()
 
-    def fit(self, X, y=None, epochs=100, train_mask=None, val_mask=None, early_stopping=True, patience=10, warm_steps=0, verbose=False):
+    def fit(self, X, y=None, epochs=100, train_mask=None, val_mask=None, early_stopping=True, patience=10, warm_steps=0, verbose=False, ignore_validation=False):
         X = X.to(self.device)
         if train_mask is None:
             train_mask = X.train_mask
@@ -60,13 +60,18 @@ class NodeLevelGNN(object):
         best_model = self.model.state_dict()
         for epoch in range(epochs):
             loss = self.train_iteration(X, y, train_mask)
-            val_loss = self.loss(X, y, val_mask).item()
-            if val_loss < best_val_loss and epoch > warm_steps:
-                best_val_loss = val_loss
+            if ignore_validation:
+                val_loss = 0
                 best_val_epoch = epoch
                 best_model = self.model.state_dict()
-            if early_stopping and epoch - best_val_epoch > patience:
-                break
+            else:
+                val_loss = self.loss(X, y, val_mask).item()
+                if val_loss < best_val_loss and epoch > warm_steps:
+                    best_val_loss = val_loss
+                    best_val_epoch = epoch
+                    best_model = self.model.state_dict()
+                if early_stopping and epoch - best_val_epoch > patience:
+                    break
             if verbose:
                 print(f"Epoch {epoch:03d}: Train Loss: {loss:.4f}, Val Loss: {val_loss:.4f}")
         self.model.load_state_dict(best_model)
