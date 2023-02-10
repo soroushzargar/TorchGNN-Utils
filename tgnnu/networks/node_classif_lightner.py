@@ -81,7 +81,7 @@ class NodeLevelGNN(object):
         with torch.no_grad():
             y_hat = self.forward(X)
         if mask is None:
-            mask = torch.ones_like(y_hat).bool()
+            mask = torch.ones_like(y_hat[:, 0]).bool()
         return y_hat[mask]
 
     def evaluate(self, X, y, mask=None):
