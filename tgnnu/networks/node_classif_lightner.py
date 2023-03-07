@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 import math
+import copy
 
 class NodeLevelGNN(object):
     def __init__(self, model, loss_fn=None):
@@ -42,7 +43,7 @@ class NodeLevelGNN(object):
         self.optimizer.step()
         return loss.item()
 
-    def fit(self, X, y=None, epochs=100, train_mask=None, val_mask=None, early_stopping=True, patience=10, warm_steps=0, verbose=False, ignore_validation=False):
+    def fit(self, X, y=None, epochs=100, train_mask=None, val_mask=None, early_stopping=True, patience=10, warm_steps=0, verbose=False, ignore_validation=False, return_best=True):
         X = X.to(self.device)
         if train_mask is None:
             train_mask = X.train_mask
@@ -57,6 +58,9 @@ class NodeLevelGNN(object):
         if y == None:
             y = X.y
 
+        train_losses = []
+        val_losses = []
+        
         best_val_loss = math.inf
         best_val_epoch = 0
         best_model = self.model.state_dict()
@@ -71,12 +75,18 @@ class NodeLevelGNN(object):
                 if val_loss < best_val_loss and epoch > warm_steps:
                     best_val_loss = val_loss
                     best_val_epoch = epoch
-                    best_model = self.model.state_dict()
+                    best_model = copy.deepcopy(self.model.state_dict())
+                    print(f"Updated with val loss = {val_loss}")
                 if early_stopping and epoch - best_val_epoch > patience:
                     break
             if verbose:
                 print(f"Epoch {epoch:03d}: Train Loss: {loss:.4f}, Val Loss: {val_loss:.4f}")
-        self.model.load_state_dict(best_model)
+            train_losses.append(loss)
+            val_losses.append(val_loss)
+        
+        if return_best:
+            self.model.load_state_dict(best_model)
+        return train_losses, val_losses
 
     def predict(self, X, mask=None):
         self.model.eval()
