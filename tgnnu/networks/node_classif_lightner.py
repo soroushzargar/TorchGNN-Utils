@@ -76,7 +76,7 @@ class NodeLevelGNN(object):
                     best_val_loss = val_loss
                     best_val_epoch = epoch
                     best_model = copy.deepcopy(self.model.state_dict())
-                    print(f"Updated with val loss = {val_loss}")
+                    # print(f"Updated with val loss = {val_loss}")
                 if early_stopping and epoch - best_val_epoch > patience:
                     break
             if verbose:
@@ -86,6 +86,8 @@ class NodeLevelGNN(object):
         
         if return_best:
             self.model.load_state_dict(best_model)
+            if verbose:
+                print(f"Taking results from epoch {best_val_epoch}")
         return train_losses, val_losses
 
     def predict(self, X, mask=None):
