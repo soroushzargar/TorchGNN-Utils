@@ -5,9 +5,10 @@ import math
 # Defining Split Manager
 class SplitManager(ABC):
     def __init__(self, dataset):
+        self.device = dataset.x.device
         self.dataset = dataset
-        self.perm_idx = torch.randperm(self.dataset.x.shape[0])
-        self.perm_selected = torch.zeros_like(self.perm_idx).bool()
+        self.perm_idx = torch.randperm(self.dataset.x.shape[0]).to(self.device)
+        self.perm_selected = torch.zeros_like(self.perm_idx).bool().to(self.device)
         self.perm_class = self.dataset.y[self.perm_idx]
 
     def alloc(self, budget, budget_allocated="overall", stratified=False, return_cumulative=False, return_mask=True):
@@ -50,3 +51,15 @@ class SplitManager(ABC):
         else:
             out = result
             return out
+        
+    def shuffle_free_idxs(self):
+        free_idxs = self.perm_idx[~self.perm_selected]
+        new_perm_unselected = torch.randperm(free_idxs.shape[0])
+
+        # updaing perm_idx
+        self.perm_idx[~self.perm_selected] = free_idxs[new_perm_unselected]
+
+        # updating perm_class
+        free_classes = self.perm_class[~self.perm_selected]
+        self.perm_class[~self.perm_selected] = free_classes[new_perm_unselected]
+        
