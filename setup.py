@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name="tgnnu",
-    version="3.0.3",
+    version="3.0.5",
 
     author='Soroush H. Zargarbashi',
     author_email='soroushzargar@gmail.com',
