@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import math
 import copy
 
-print("V2.3")
 
 class NodeLevelGNN(object):
     def __init__(self, model, loss_fn=None):
