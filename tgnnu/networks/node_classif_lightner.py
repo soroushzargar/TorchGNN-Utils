@@ -12,7 +12,7 @@ class NodeLevelGNN(object):
         self.optimizer = None
         self.loss_fn = loss_fn or F.cross_entropy
 
-    def set_optimizer(self, optimizer_lambda=None, optimizer_keyargs=None):
+    def set_optimizer(self, optimizer_lambda=None, optimizer_keyargs=None): # TODO: we should rewrite this to accept a string for optimizer name
         if optimizer_keyargs is None:
             optimizer_keyargs = {"weight_decay": 1e-2}
 

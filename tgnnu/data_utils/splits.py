@@ -2,6 +2,9 @@ from abc import ABC
 import torch
 import math
 
+import torch_geometric
+from torch_geometric.data import Data as GraphData
+
 # Defining Split Manager
 class SplitManager(ABC):
     def __init__(self, dataset):
@@ -205,3 +208,22 @@ class GraphSplit(object):
         obj = cls(n_vertices=dataset.x.shape[0], n_edges=dataset.edge_index.shape[1], edge_index=dataset.edge_index, ys=dataset.y, device=dataset.x.device)
         # obj.device = dataset.x.device
         return obj
+
+# node-induced subgraph
+def node_induced_subgraph(graph, mask):
+    new_edge_index = graph.edge_index.T[
+        mask[graph.edge_index[0]] & mask[graph.edge_index[1]]
+        ].T.clone()
+    
+    return GraphData(x=graph.x, edge_index=new_edge_index, y=graph.y)
+
+
+# edge-induced subgraph
+def edge_induced_subgraph(graph, edge_mask):
+    new_edge_index = graph.edge_index.T[edge_mask].T.clone()
+    return GraphData(x=graph.x, edge_index=new_edge_index, y=graph.y)
+
+# Union of two edges
+def union_edge_index(graph, first, second):
+    edge_index = torch_geometric.utils.sort_edge_index(torch.concat([first, second], dim=1))
+    return GraphData(x=graph.x, edge_index=edge_index, y=graph.y)
